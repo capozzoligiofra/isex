@@ -1,4 +1,6 @@
-# Netlify rileva Next.js e usa il suo adapter (OpenNext) in automatico.
+# Next.js su Netlify: l'adapter @netlify/plugin-nextjs trasforma pagine
+# dinamiche, Server Actions e proxy in Netlify Functions. Va dichiarato qui
+# perché i deploy caricati via CLI/API non lo aggiungono da soli.
 # Le variabili NEXT_PUBLIC_SUPABASE_* vanno impostate nella UI di Netlify:
 # vengono incluse al momento della build, quindi dopo averle cambiate serve
 # un nuovo deploy.
@@ -8,3 +10,6 @@
 
 [build.environment]
   NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
