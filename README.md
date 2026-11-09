@@ -77,6 +77,23 @@ npx supabase start          # applica anche le migrazioni in supabase/migrations
 Copia `API_URL` e `PUBLISHABLE_KEY` stampati dal comando in `.env.local`.
 In locale la conferma email è disattivata (vedi `supabase/config.toml`).
 
+## Produzione
+
+| Cosa | Dove |
+| --- | --- |
+| App | <https://carbura-spkv.netlify.app> (Netlify, progetto `carbura-spkv`) |
+| Database e Auth | Supabase, progetto `carbura` (`qbtwaqpnbgcpyinwvqnr`, eu-central-1) |
+
+- Su Netlify sono impostate `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+  e `NEXT_PUBLIC_SITE_URL`. Dopo ogni modifica alle variabili serve un nuovo deploy.
+- Auth: *Site URL* `https://carbura-spkv.netlify.app`, redirect consentiti
+  `https://carbura-spkv.netlify.app/**` e `http://localhost:3000/**`.
+- **La conferma email è disattivata**: senza un server SMTP proprio, Supabase invia email solo
+  ai membri del team del progetto. Per riattivarla (e far funzionare il recupero password per
+  tutti) configura un SMTP in Authentication → Emails → SMTP Settings, poi riattiva
+  *Confirm email*.
+- Le migrazioni in `supabase/migrations/` sono già applicate al progetto.
+
 ## Script
 
 | Comando             | Cosa fa                                  |
