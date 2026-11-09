@@ -102,7 +102,15 @@ export function MealCard({ meal, entries, date }: { meal: MealPlan; entries: Foo
   );
 }
 
-export function WorkoutCard({ plan, completed }: { plan: WorkoutPlan; completed?: boolean }) {
+export function WorkoutCard({
+  plan,
+  completed,
+  fromStrava,
+}: {
+  plan: WorkoutPlan;
+  completed?: boolean;
+  fromStrava?: boolean;
+}) {
   const { workout: w, fueling: f } = plan;
   return (
     <Link href={`/allenamenti/${w.id}`} className="block">
@@ -117,6 +125,7 @@ export function WorkoutCard({ plan, completed }: { plan: WorkoutPlan; completed?
             <p className="text-xs text-muted">
               {formatDuration(w.durationMin)} · {INTENSITIES[w.intensity].label} · ~{fmt(plan.kcal)} kcal
               {completed ? " · completato" : ""}
+              {fromStrava ? " · da Strava" : ""}
             </p>
           </div>
           <ChevronRight className="h-5 w-5 text-muted" aria-hidden />

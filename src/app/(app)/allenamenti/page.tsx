@@ -9,6 +9,7 @@ import { addDays, formatDayShort, formatRange, isIsoDate, startOfWeek } from "@/
 import { fmt } from "@/lib/format";
 import { INTENSITIES, SPORTS, dayLoadLabel, formatDuration } from "@/lib/labels";
 import { computeDayPlan } from "@/lib/nutrition";
+import { autoSyncStrava } from "@/lib/strava/sync";
 
 export const metadata: Metadata = { title: "Allenamenti" };
 
@@ -18,6 +19,7 @@ export default async function WorkoutsPage({ searchParams }: PageProps<"/allenam
   const { settimana } = await searchParams;
   const monday = startOfWeek(isIsoDate(settimana) ? settimana : today);
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+  await autoSyncStrava();
   // One extra day so Sunday knows about Monday's sessions.
   const workouts = await getWorkouts(monday, addDays(monday, 7));
 
@@ -96,6 +98,7 @@ export default async function WorkoutsPage({ searchParams }: PageProps<"/allenam
                           <div className="truncate text-sm font-semibold">{w.title || SPORTS[w.sport]}</div>
                           <div className="text-xs text-muted">
                             {w.startTime} · {formatDuration(w.durationMin)} · {INTENSITIES[w.intensity].label}
+                            {w.source === "strava" && " · Strava"}
                           </div>
                         </div>
                         {w.completed && <span className="text-xs font-medium text-primary">✓</span>}

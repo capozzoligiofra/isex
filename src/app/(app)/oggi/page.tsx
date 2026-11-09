@@ -9,6 +9,7 @@ import { addDays, formatDayLong, isIsoDate } from "@/lib/dates";
 import { fmt } from "@/lib/format";
 import { dayLoadLabel } from "@/lib/labels";
 import { computeDayPlan, toMinutes } from "@/lib/nutrition";
+import { autoSyncStrava } from "@/lib/strava/sync";
 
 export const metadata: Metadata = { title: "Oggi" };
 
@@ -21,6 +22,7 @@ export default async function TodayPage({ searchParams }: PageProps<"/oggi">) {
   const date = isIsoDate(data) ? data : today;
   const tomorrow = addDays(date, 1);
 
+  await autoSyncStrava();
   const [workouts, entries] = await Promise.all([
     getWorkouts(date, tomorrow),
     getFoodEntries(date),
@@ -40,7 +42,7 @@ export default async function TodayPage({ searchParams }: PageProps<"/oggi">) {
   const orphanEntries = entries.filter(
     (e) => e.mealSlot !== FUELING_SLOT && !slotIds.has(e.mealSlot),
   );
-  const completed = new Map(todays.map((w) => [w.id, w.completed]));
+  const records = new Map(todays.map((w) => [w.id, w]));
 
   type Item =
     | { kind: "meal"; at: number; meal: (typeof plan.meals)[number] }
@@ -137,7 +139,11 @@ export default async function TodayPage({ searchParams }: PageProps<"/oggi">) {
                 date={date}
               />
             ) : (
-              <WorkoutCard plan={item.workout} completed={completed.get(item.workout.workout.id)} />
+              <WorkoutCard
+                plan={item.workout}
+                completed={records.get(item.workout.workout.id)?.completed}
+                fromStrava={records.get(item.workout.workout.id)?.source === "strava"}
+              />
             )}
             {showFuelingLog && index === lastWorkoutIndex && (
               <FuelingLogCard targetCarbs={plan.fuelingCarbsG} entries={fuelingEntries} date={date} />

@@ -56,6 +56,21 @@ export default async function WorkoutPage({ params, searchParams }: PageProps<"/
             {INTENSITIES[workout.intensity].label}
             {workout.completed && " · completato"}
           </p>
+          {workout.source === "strava" && workout.externalId && (
+            <a
+              href={`https://www.strava.com/activities/${workout.externalId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-block text-sm font-semibold text-[#fc4c02] hover:underline"
+            >
+              View on Strava
+            </a>
+          )}
+          {workout.source === "strava" && (
+            <p className="mt-1 text-xs text-muted">
+              Importato da Strava: se l&apos;intensità non è quella giusta, correggila con Modifica.
+            </p>
+          )}
         </div>
       </header>
 

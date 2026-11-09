@@ -35,6 +35,8 @@ export interface WorkoutRow {
   hot_conditions: boolean;
   completed: boolean;
   notes: string | null;
+  source: "manual" | "strava";
+  external_id: string | null;
 }
 
 export interface FoodEntryRow {
@@ -69,7 +71,7 @@ export interface FoodEntry {
 }
 
 export const WORKOUT_COLUMNS =
-  "id, user_id, date, start_time, duration_min, sport, intensity, title, energy_kj, hot_conditions, completed, notes";
+  "id, user_id, date, start_time, duration_min, sport, intensity, title, energy_kj, hot_conditions, completed, notes, source, external_id";
 export const FOOD_COLUMNS =
   "id, date, meal_slot, name, brand, source, source_id, grams, kcal, carbs_g, protein_g, fat_g, created_at";
 export const PROFILE_COLUMNS =
@@ -103,6 +105,8 @@ export function toProfile(row: ProfileRow): CompleteProfile | null {
 export interface WorkoutRecord extends Workout {
   completed: boolean;
   notes: string | null;
+  source: "manual" | "strava";
+  externalId: string | null;
 }
 
 export function toWorkout(row: WorkoutRow): WorkoutRecord {
@@ -118,6 +122,8 @@ export function toWorkout(row: WorkoutRow): WorkoutRecord {
     hotConditions: row.hot_conditions,
     completed: row.completed,
     notes: row.notes,
+    source: row.source ?? "manual",
+    externalId: row.external_id,
   };
 }
 

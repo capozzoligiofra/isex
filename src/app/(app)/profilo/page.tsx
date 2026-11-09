@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { LogOut } from "lucide-react";
 import { signOut } from "@/app/actions/auth";
 import { ProfileForm } from "@/components/profile-form";
+import { StravaCard } from "@/components/strava-card";
+import { getStravaStatus } from "@/lib/strava/sync";
 import { Card, PageHeader, buttonClass, cx } from "@/components/ui";
 import { getProfileRow, requireProfile } from "@/lib/data";
 import { fmt } from "@/lib/format";
@@ -10,9 +12,13 @@ import { todayIso } from "@/lib/dates";
 
 export const metadata: Metadata = { title: "Profilo" };
 
-export default async function ProfilePage() {
+export default async function ProfilePage({ searchParams }: PageProps<"/profilo">) {
   const profile = await requireProfile();
-  const row = await getProfileRow();
+  const [row, strava, { strava: flash }] = await Promise.all([
+    getProfileRow(),
+    getStravaStatus(),
+    searchParams,
+  ]);
   const age = ageOn(profile.birthDate, todayIso());
   const rmr = bmr(profile.sex, profile.weightKg, profile.heightCm, age);
 
@@ -22,6 +28,7 @@ export default async function ProfilePage() {
         title="Profilo"
         subtitle={`${age} anni · ${fmt(profile.weightKg, 1)} kg · metabolismo basale ~${fmt(rmr)} kcal`}
       />
+      <StravaCard status={strava} flash={typeof flash === "string" ? flash : undefined} />
       <Card className="mb-4">
         <ProfileForm profile={row} />
       </Card>

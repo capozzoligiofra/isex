@@ -94,6 +94,36 @@ In locale la conferma email è disattivata (vedi `supabase/config.toml`).
   *Confirm email*.
 - Le migrazioni in `supabase/migrations/` sono già applicate al progetto.
 
+## Strava (e Garmin)
+
+Garmin ha sospeso l'accesso alle sue API per i nuovi sviluppatori, quindi gli allenamenti
+Garmin arrivano tramite Strava: Garmin Connect → Strava (sincronizzazione automatica) → Carbura.
+
+Cosa fa l'integrazione:
+
+- l'atleta collega Strava dal **Profilo** (OAuth, permesso `activity:read_all`, sola lettura);
+- vengono importate le attività completate (prima volta: ultimi 14 giorni), con durata, sport,
+  kJ del misuratore di potenza e un'intensità stimata (gara/allenamento da Strava, oppure
+  Relative Effort per ora), correggibile in app;
+- se un'attività corrisponde a un allenamento pianificato (stesso giorno e sport, inizio entro
+  3 ore) lo **completa** invece di crearne un doppione, mantenendo titolo e intensità del piano;
+- la sincronizzazione parte aprendo *Oggi* o *Allenamenti* (al massimo ogni 30 minuti) o con
+  *Sincronizza ora*; le attività già importate non vengono sovrascritte;
+- *Scollega* revoca l'accesso su Strava e lascia gli allenamenti già importati.
+
+Configurazione:
+
+1. Crea un'app su <https://www.strava.com/settings/api>, con *Authorization Callback Domain*
+   uguale al dominio dell'app (es. `carbura-spkv.netlify.app`; `localhost` è sempre ammesso).
+2. Imposta `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET` (segreto, solo lato server) in
+   `.env.local` e nelle variabili d'ambiente di Netlify, poi ripubblica.
+3. Le app Strava nuove accettano solo l'atleta che le ha create: per aprirle ad altri utenti
+   va richiesta l'approvazione a Strava. Prima di farlo, sostituisci il pulsante "Collega
+   Strava" con quello ufficiale delle linee guida del brand Strava.
+
+Senza queste variabili l'app funziona normalmente e il profilo indica che l'integrazione non è
+configurata.
+
 ## Script
 
 | Comando             | Cosa fa                                  |
