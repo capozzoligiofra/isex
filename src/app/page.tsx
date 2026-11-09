@@ -49,7 +49,7 @@ export default async function Home() {
         </LinkButton>
       </header>
 
-      <main className="grid flex-1 items-center gap-10 py-6 md:grid-cols-2 md:py-14">
+      <main className="grid flex-1 grid-cols-1 items-center gap-10 py-6 md:grid-cols-2 md:py-14">
         <div>
           <p className="mb-3 inline-block rounded-full bg-accent/30 px-3 py-1 text-xs font-semibold text-text">
             Per ciclisti, runner e triatleti
