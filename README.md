@@ -93,6 +93,12 @@ In locale la conferma email è disattivata (vedi `supabase/config.toml`).
   tutti) configura un SMTP in Authentication → Emails → SMTP Settings, poi riattiva
   *Confirm email*.
 - Le migrazioni in `supabase/migrations/` sono già applicate al progetto.
+- **Prestazioni**: le funzioni Netlify girano in us-east-2 (Ohio), il database a Francoforte. Le
+  pagine fanno una sola andata e ritorno verso il database (query in parallelo) e le
+  sincronizzazioni con intervals.icu/Strava girano dopo l'invio della pagina (`after()`). La
+  funzione programmata `netlify/functions/keep-warm.mts` chiama `/api/health` ogni 5 minuti per
+  evitare gli avvii a freddo. Per avere server e database vicini serve spostare le funzioni a
+  Francoforte (Netlify → Cloud compute → Functions → Region, piano Pro) e poi ripubblicare.
 
 ## Garmin: intervals.icu e Strava
 
