@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getTimeZone, getToday, getUserId } from "@/lib/data";
 import { addDays, formatDateTime } from "@/lib/dates";
 import { matchPlanned, type PlannedCandidate } from "@/lib/integrations/common";
+import { requestSyncContext, type SyncContext } from "@/lib/integrations/context";
 import type { Sport } from "@/lib/nutrition";
 import { listActivities, listPlannedEvents, type IcuCredentials } from "./client";
 import { activityToWorkout, eventToWorkout } from "./map";
@@ -64,10 +65,12 @@ export interface IntervalsSyncResult {
  * 2. planned workouts of the next 14 days mirror the intervals.icu calendar
  *    (added, moved, removed) until they are completed.
  */
-export async function syncIntervals(opts: { force?: boolean } = {}): Promise<IntervalsSyncResult | null> {
-  const userId = await getUserId();
-  if (!userId) return null;
-  const supabase = await createClient();
+export async function syncIntervals(
+  opts: { force?: boolean; ctx?: SyncContext } = {},
+): Promise<IntervalsSyncResult | null> {
+  const ctx = opts.ctx ?? (await requestSyncContext());
+  if (!ctx) return null;
+  const { supabase, userId, today } = ctx;
   const conn = await getConnection(supabase, userId);
   if (!conn) return null;
 
@@ -77,7 +80,6 @@ export async function syncIntervals(opts: { force?: boolean } = {}): Promise<Int
   }
 
   const creds: IcuCredentials = { athleteId: conn.athlete_id, apiKey: conn.api_key };
-  const today = await getToday();
   const activitiesFrom = last
     ? addDays(new Date(last).toISOString().slice(0, 10), -OVERLAP_DAYS)
     : addDays(today, -INITIAL_DAYS);

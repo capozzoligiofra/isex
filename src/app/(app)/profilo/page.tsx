@@ -15,8 +15,8 @@ import { todayIso } from "@/lib/dates";
 export const metadata: Metadata = { title: "Profilo" };
 
 export default async function ProfilePage({ searchParams }: PageProps<"/profilo">) {
-  const profile = await requireProfile();
-  const [row, strava, intervals, { strava: flash }] = await Promise.all([
+  const [profile, row, strava, intervals, { strava: flash }] = await Promise.all([
+    requireProfile(),
     getProfileRow(),
     getStravaStatus(),
     getIntervalsStatus(),

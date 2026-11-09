@@ -5,6 +5,7 @@ import { getTimeZone, getUserId } from "@/lib/data";
 import { formatDateTime } from "@/lib/dates";
 import { deauthorize, listActivities, refreshTokens, StravaError, type StravaTokens } from "./client";
 import { isStravaConfigured } from "./config";
+import { requestSyncContext, type SyncContext } from "@/lib/integrations/context";
 import { matchPlanned, toWorkout, type PlannedCandidate } from "./map";
 
 export interface StravaConnection {
@@ -101,11 +102,13 @@ export interface SyncResult {
  * workout is created. Activities already imported are left untouched, so
  * edits made in the app survive later syncs.
  */
-export async function syncStrava(opts: { force?: boolean } = {}): Promise<SyncResult | null> {
+export async function syncStrava(
+  opts: { force?: boolean; ctx?: SyncContext } = {},
+): Promise<SyncResult | null> {
   if (!isStravaConfigured()) return null;
-  const userId = await getUserId();
-  if (!userId) return null;
-  const supabase = await createClient();
+  const ctx = opts.ctx ?? (await requestSyncContext());
+  if (!ctx) return null;
+  const { supabase, userId } = ctx;
   const conn = await getConnection(supabase, userId);
   if (!conn) return null;
 

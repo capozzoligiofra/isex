@@ -9,23 +9,23 @@ import { addDays, formatDayLong, isIsoDate } from "@/lib/dates";
 import { fmt } from "@/lib/format";
 import { dayLoadLabel } from "@/lib/labels";
 import { computeDayPlan, toMinutes } from "@/lib/nutrition";
-import { autoSyncIntegrations } from "@/lib/integrations/auto-sync";
+import { scheduleIntegrationSync } from "@/lib/integrations/auto-sync";
 
 export const metadata: Metadata = { title: "Oggi" };
 
 const FUELING_SLOT = "allenamento";
 
 export default async function TodayPage({ searchParams }: PageProps<"/oggi">) {
-  const profile = await requireProfile();
-  const today = await getToday();
-  const { data } = await searchParams;
+  const [today, { data }] = await Promise.all([getToday(), searchParams]);
   const date = isIsoDate(data) ? data : today;
   const tomorrow = addDays(date, 1);
 
-  await autoSyncIntegrations();
-  const [workouts, entries] = await Promise.all([
+  // One round trip to the database: these queries run side by side.
+  const [profile, workouts, entries] = await Promise.all([
+    requireProfile(),
     getWorkouts(date, tomorrow),
     getFoodEntries(date),
+    scheduleIntegrationSync(),
   ]);
   const todays = workouts.filter((w) => w.date === date);
   const plan = computeDayPlan({

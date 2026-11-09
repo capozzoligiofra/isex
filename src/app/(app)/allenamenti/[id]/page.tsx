@@ -20,8 +20,7 @@ export default async function WorkoutPage({ params, searchParams }: PageProps<"/
   const { modifica } = await searchParams;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
-  const profile = await requireProfile();
-  const workout = await getWorkout(id);
+  const [profile, workout] = await Promise.all([requireProfile(), getWorkout(id)]);
   if (!workout) notFound();
 
   const nextDay = addDays(workout.date, 1);

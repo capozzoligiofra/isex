@@ -16,14 +16,16 @@ const SUGGESTED_MEAL = ["pasta-secca", "riso-crudo", "pane", "avena", "banana", 
 const SUGGESTED_FUELING = ["gel", "barretta", "maltodestrine", "isotonica", "banana", "datteri"];
 
 export default async function AddFoodPage({ searchParams }: PageProps<"/diario/aggiungi">) {
-  const profile = await requireProfile();
-  const { data, pasto } = await searchParams;
+
+  // Start the recent-foods query right away, alongside the profile.
+  const recentPromise = getRecentFoods();
+  const [profile, { data, pasto }] = await Promise.all([requireProfile(), searchParams]);
   const date = isIsoDate(data) ? data : await getToday();
   const slot = typeof pasto === "string" ? pasto : "";
   const meal = profile.meals.find((m) => m.id === slot);
   if (!meal && slot !== FUELING_SLOT) notFound();
 
-  const recentEntries = await getRecentFoods();
+  const recentEntries = await recentPromise;
   const recent: FoodItem[] = recentEntries.map((e) => {
     const k = 100 / e.grams;
     return {

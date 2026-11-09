@@ -9,19 +9,22 @@ import { addDays, formatDayShort, formatRange, isIsoDate, startOfWeek } from "@/
 import { fmt } from "@/lib/format";
 import { INTENSITIES, SOURCES, SPORTS, dayLoadLabel, formatDuration } from "@/lib/labels";
 import { computeDayPlan } from "@/lib/nutrition";
-import { autoSyncIntegrations } from "@/lib/integrations/auto-sync";
+import { scheduleIntegrationSync } from "@/lib/integrations/auto-sync";
 
 export const metadata: Metadata = { title: "Allenamenti" };
 
 export default async function WorkoutsPage({ searchParams }: PageProps<"/allenamenti">) {
-  const profile = await requireProfile();
   const today = await getToday();
   const { settimana } = await searchParams;
   const monday = startOfWeek(isIsoDate(settimana) ? settimana : today);
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
-  await autoSyncIntegrations();
+
   // One extra day so Sunday knows about Monday's sessions.
-  const workouts = await getWorkouts(monday, addDays(monday, 7));
+  const [profile, workouts] = await Promise.all([
+    requireProfile(),
+    getWorkouts(monday, addDays(monday, 7)),
+    scheduleIntegrationSync(),
+  ]);
 
   const totalMin = workouts
     .filter((w) => w.date <= days[6])

@@ -26,3 +26,20 @@ export async function createClient() {
     },
   });
 }
+
+/**
+ * Client built from a snapshot of the request cookies, for work that runs
+ * after the response (`after()`), where `cookies()` can no longer be called.
+ * It can't write cookies; the proxy has already refreshed the session.
+ */
+export function createClientFromSnapshot(snapshot: { name: string; value: string }[]) {
+  const { url, key } = supabaseEnv();
+  return createServerClient(url, key, {
+    cookies: {
+      getAll() {
+        return snapshot;
+      },
+      setAll() {},
+    },
+  });
+}
