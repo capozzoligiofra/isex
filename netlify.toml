@@ -1,0 +1,10 @@
+# Netlify rileva Next.js e usa il suo adapter (OpenNext) in automatico.
+# Le variabili NEXT_PUBLIC_SUPABASE_* vanno impostate nella UI di Netlify:
+# vengono incluse al momento della build, quindi dopo averle cambiate serve
+# un nuovo deploy.
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"

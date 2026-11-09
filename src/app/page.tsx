@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Activity, CalendarDays, NotebookPen, Zap } from "lucide-react";
 import { Logo } from "@/components/logo";
+import { SetupNotice } from "@/components/setup-notice";
 import { CarbBadge, LinkButton } from "@/components/ui";
 import { getUserId } from "@/lib/data";
 import { APP_NAME } from "@/lib/app";
@@ -60,6 +61,9 @@ export default async function Home() {
             {APP_NAME} calcola ogni giorno quanta energia e quanti carboidrati ti servono,
             ti dice come distribuirli nei pasti e come rifornirti durante la sessione.
           </p>
+          <div className="mt-6 max-w-md">
+            <SetupNotice />
+          </div>
           <div className="mt-7 flex flex-wrap gap-3">
             <LinkButton href="/registrati" className="px-6 py-3 text-base">
               Crea un account gratuito

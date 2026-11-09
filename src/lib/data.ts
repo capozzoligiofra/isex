@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { DEFAULT_TIMEZONE, todayIso } from "@/lib/dates";
 import {
   FOOD_COLUMNS,
@@ -18,6 +19,7 @@ import {
 
 /** The signed-in user's id, verified against the JWT, or null. */
 export const getUserId = cache(async (): Promise<string | null> => {
+  if (!isSupabaseConfigured()) return null;
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   return data?.claims?.sub ?? null;

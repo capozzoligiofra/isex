@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { supabaseEnv } from "./env";
+import { isSupabaseConfigured, supabaseEnv } from "./env";
 
 const PUBLIC_PATHS = [
   "/",
@@ -24,6 +24,9 @@ function isPublic(pathname: string) {
  * themselves through the data access layer.
  */
 export async function updateSession(request: NextRequest) {
+  // Without Supabase there is no session to refresh: pages show a setup notice.
+  if (!isSupabaseConfigured()) return NextResponse.next({ request });
+
   let response = NextResponse.next({ request });
   const { url, key } = supabaseEnv();
 

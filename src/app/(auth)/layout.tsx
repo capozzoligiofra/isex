@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
+import { SetupNotice } from "@/components/setup-notice";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (
@@ -8,7 +10,7 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
         <Logo />
       </Link>
       <div className="w-full max-w-sm rounded-2xl border border-border bg-surface p-6 shadow-sm">
-        {children}
+        {isSupabaseConfigured() ? children : <SetupNotice />}
       </div>
     </div>
   );
