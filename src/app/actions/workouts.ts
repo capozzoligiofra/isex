@@ -3,14 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
-import { requireUserId } from "@/lib/data";
+import { requireActionUser } from "@/lib/data";
 import { startOfWeek } from "@/lib/dates";
 import { fieldErrors, formObject, type FormState } from "@/lib/forms";
 import { isoDate, workoutSchema } from "@/lib/validation";
 
 export async function saveWorkout(_prev: FormState, formData: FormData): Promise<FormState> {
-  const userId = await requireUserId();
+  const { userId, supabase } = await requireActionUser();
   const raw = formObject(formData);
   const parsed = workoutSchema.safeParse(raw);
   if (!parsed.success) {
@@ -35,7 +34,6 @@ export async function saveWorkout(_prev: FormState, formData: FormData): Promise
     notes: w.notes || null,
   };
 
-  const supabase = await createClient();
   let id = w.id;
   if (id) {
     const { error } = await supabase
@@ -60,13 +58,12 @@ export async function saveWorkout(_prev: FormState, formData: FormData): Promise
 }
 
 export async function deleteWorkout(formData: FormData) {
-  const userId = await requireUserId();
+  const { userId, supabase } = await requireActionUser();
   const parsed = z
     .object({ id: z.uuid(), date: isoDate })
     .safeParse(formObject(formData));
   if (!parsed.success) return;
 
-  const supabase = await createClient();
   await supabase.from("workouts").delete().eq("id", parsed.data.id).eq("user_id", userId);
   revalidatePath("/oggi");
   revalidatePath("/allenamenti", "layout");

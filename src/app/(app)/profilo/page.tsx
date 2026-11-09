@@ -7,7 +7,7 @@ import { StravaCard } from "@/components/strava-card";
 import { getIntervalsStatus } from "@/lib/intervals/sync";
 import { getStravaStatus } from "@/lib/strava/sync";
 import { Card, PageHeader, buttonClass, cx } from "@/components/ui";
-import { getProfileRow, requireProfile } from "@/lib/data";
+import { getProfileRow, requireProfile, setReturnPath } from "@/lib/data";
 import { fmt } from "@/lib/format";
 import { ageOn, bmr } from "@/lib/nutrition";
 import { todayIso } from "@/lib/dates";
@@ -15,6 +15,7 @@ import { todayIso } from "@/lib/dates";
 export const metadata: Metadata = { title: "Profilo" };
 
 export default async function ProfilePage({ searchParams }: PageProps<"/profilo">) {
+  setReturnPath("/profilo");
   const [profile, row, strava, intervals, { strava: flash }] = await Promise.all([
     requireProfile(),
     getProfileRow(),

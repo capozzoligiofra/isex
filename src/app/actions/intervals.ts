@@ -2,13 +2,18 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
-import { requireUserId } from "@/lib/data";
+import { getToday, requireActionUser } from "@/lib/data";
+import type { SyncContext } from "@/lib/integrations/context";
 import { fieldErrors, formObject, type FormState } from "@/lib/forms";
 import { IntervalsError, getAthlete } from "@/lib/intervals/client";
 import { normalizeAthleteId } from "@/lib/intervals/map";
 import { disconnectIntervals, syncIntervals, type IntervalsSyncResult } from "@/lib/intervals/sync";
 import { timeOfDay } from "@/lib/validation";
+
+async function actionContext(): Promise<SyncContext> {
+  const [{ userId, supabase }, today] = await Promise.all([requireActionUser(), getToday()]);
+  return { userId, supabase, today };
+}
 
 function summary(r: IntervalsSyncResult | null): string {
   if (!r) return "intervals.icu non è collegato.";
@@ -46,7 +51,8 @@ const connectSchema = z.object({
 });
 
 export async function connectIntervals(_prev: FormState, formData: FormData): Promise<FormState> {
-  const userId = await requireUserId();
+  const ctx = await actionContext();
+  const { userId, supabase } = ctx;
   const raw = formObject(formData);
   const values = { athlete_id: raw.athlete_id ?? "", default_time: raw.default_time ?? "" };
   const parsed = connectSchema.safeParse(raw);
@@ -63,7 +69,6 @@ export async function connectIntervals(_prev: FormState, formData: FormData): Pr
     return { error: errorMessage(e), values };
   }
 
-  const supabase = await createClient();
   const { error } = await supabase.from("intervals_connections").upsert({
     user_id: userId,
     athlete_id,
@@ -76,7 +81,7 @@ export async function connectIntervals(_prev: FormState, formData: FormData): Pr
 
   let message = "intervals.icu collegato.";
   try {
-    message = `intervals.icu collegato. ${summary(await syncIntervals({ force: true }))}`;
+    message = `intervals.icu collegato. ${summary(await syncIntervals({ force: true, ctx }))}`;
   } catch (e) {
     message = `intervals.icu collegato, ma la prima sincronizzazione non è riuscita: ${errorMessage(e)}`;
   }
@@ -85,9 +90,9 @@ export async function connectIntervals(_prev: FormState, formData: FormData): Pr
 }
 
 export async function syncIntervalsNow(): Promise<FormState> {
-  await requireUserId();
+  const ctx = await actionContext();
   try {
-    const result = await syncIntervals({ force: true });
+    const result = await syncIntervals({ force: true, ctx });
     revalidatePath("/", "layout");
     return result ? { message: summary(result) } : { error: summary(result) };
   } catch (e) {
@@ -96,10 +101,10 @@ export async function syncIntervalsNow(): Promise<FormState> {
 }
 
 export async function updateIntervalsTime(_prev: FormState, formData: FormData): Promise<FormState> {
-  const userId = await requireUserId();
+  const ctx = await actionContext();
+  const { userId, supabase } = ctx;
   const parsed = z.object({ default_time: timeOfDay }).safeParse(formObject(formData));
   if (!parsed.success) return { fieldErrors: fieldErrors(parsed.error) };
-  const supabase = await createClient();
   const { error } = await supabase
     .from("intervals_connections")
     .update({ default_time: parsed.data.default_time })
@@ -107,7 +112,7 @@ export async function updateIntervalsTime(_prev: FormState, formData: FormData):
   if (error) return { error: `Salvataggio non riuscito: ${error.message}` };
   // Re-place planned workouts that use the usual time.
   try {
-    await syncIntervals({ force: true });
+    await syncIntervals({ force: true, ctx });
   } catch {
     // The next sync will apply it.
   }
@@ -116,7 +121,6 @@ export async function updateIntervalsTime(_prev: FormState, formData: FormData):
 }
 
 export async function disconnectIntervalsAction() {
-  await requireUserId();
-  await disconnectIntervals();
+  await disconnectIntervals(await actionContext());
   revalidatePath("/", "layout");
 }

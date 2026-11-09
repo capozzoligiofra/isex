@@ -1,19 +1,25 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireUserId } from "@/lib/data";
+import { getToday, requireActionUser } from "@/lib/data";
+import type { SyncContext } from "@/lib/integrations/context";
 import type { FormState } from "@/lib/forms";
 import { StravaError } from "@/lib/strava/client";
 import { disconnectStrava, syncStrava } from "@/lib/strava/sync";
+
+async function actionContext(): Promise<SyncContext> {
+  const [{ userId, supabase }, today] = await Promise.all([requireActionUser(), getToday()]);
+  return { userId, supabase, today };
+}
 
 function plural(n: number, one: string, many: string) {
   return `${n} ${n === 1 ? one : many}`;
 }
 
 export async function syncStravaNow(): Promise<FormState> {
-  await requireUserId();
+  const ctx = await actionContext();
   try {
-    const result = await syncStrava({ force: true });
+    const result = await syncStrava({ force: true, ctx });
     revalidatePath("/", "layout");
     if (!result) return { error: "Strava non è collegato." };
     if (result.imported === 0 && result.linked === 0) {
@@ -34,7 +40,6 @@ export async function syncStravaNow(): Promise<FormState> {
 }
 
 export async function disconnectStravaAction() {
-  await requireUserId();
-  await disconnectStrava();
+  await disconnectStrava(await actionContext());
   revalidatePath("/", "layout");
 }

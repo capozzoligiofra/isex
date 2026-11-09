@@ -2,13 +2,12 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { requireUserId } from "@/lib/data";
+import { requireActionUser } from "@/lib/data";
 import { fieldErrors, formObject, safePath, type FormState } from "@/lib/forms";
 import { profileSchema } from "@/lib/validation";
 
 export async function saveProfile(_prev: FormState, formData: FormData): Promise<FormState> {
-  const userId = await requireUserId();
+  const { userId, supabase } = await requireActionUser();
   const raw = formObject(formData);
   const parsed = profileSchema.safeParse(raw);
   if (!parsed.success) {
@@ -20,7 +19,6 @@ export async function saveProfile(_prev: FormState, formData: FormData): Promise
   }
 
   const p = parsed.data;
-  const supabase = await createClient();
   const { error } = await supabase.from("profiles").upsert({
     id: userId,
     display_name: p.display_name || null,

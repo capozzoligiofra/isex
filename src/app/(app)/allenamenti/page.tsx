@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { DateNav } from "@/components/date-nav";
 import { SportIcon } from "@/components/sport-icon";
 import { CarbBadge, Card, LinkButton, PageHeader, cx } from "@/components/ui";
-import { getToday, getWorkouts, requireProfile } from "@/lib/data";
+import { getToday, getWorkouts, requireProfile, setReturnPath } from "@/lib/data";
 import { addDays, formatDayShort, formatRange, isIsoDate, startOfWeek } from "@/lib/dates";
 import { fmt } from "@/lib/format";
 import { INTENSITIES, SOURCES, SPORTS, dayLoadLabel, formatDuration } from "@/lib/labels";
@@ -16,6 +16,7 @@ export const metadata: Metadata = { title: "Allenamenti" };
 export default async function WorkoutsPage({ searchParams }: PageProps<"/allenamenti">) {
   const today = await getToday();
   const { settimana } = await searchParams;
+  setReturnPath(isIsoDate(settimana) ? `/allenamenti?settimana=${settimana}` : "/allenamenti");
   const monday = startOfWeek(isIsoDate(settimana) ? settimana : today);
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
 

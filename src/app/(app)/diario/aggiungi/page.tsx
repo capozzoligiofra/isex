@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { FoodPicker } from "@/components/food-picker";
 import { Card, buttonClass, cx } from "@/components/ui";
-import { getRecentFoods, getToday, requireProfile } from "@/lib/data";
+import { getRecentFoods, getToday, requireProfile, setReturnPath } from "@/lib/data";
 import { formatDayLong, isIsoDate } from "@/lib/dates";
 import { GENERIC_FOODS } from "@/lib/foods/generic";
 import type { FoodItem } from "@/lib/foods/types";
@@ -17,9 +17,13 @@ const SUGGESTED_FUELING = ["gel", "barretta", "maltodestrine", "isotonica", "ban
 
 export default async function AddFoodPage({ searchParams }: PageProps<"/diario/aggiungi">) {
 
+  const query = await searchParams;
+  setReturnPath(`/diario/aggiungi?${new URLSearchParams(
+    Object.entries(query).filter((e): e is [string, string] => typeof e[1] === "string"),
+  )}`);
   // Start the recent-foods query right away, alongside the profile.
   const recentPromise = getRecentFoods();
-  const [profile, { data, pasto }] = await Promise.all([requireProfile(), searchParams]);
+  const [profile, { data, pasto }] = await Promise.all([requireProfile(), query]);
   const date = isIsoDate(data) ? data : await getToday();
   const slot = typeof pasto === "string" ? pasto : "";
   const meal = profile.meals.find((m) => m.id === slot);

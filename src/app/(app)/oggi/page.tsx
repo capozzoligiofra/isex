@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { DateNav } from "@/components/date-nav";
 import { FuelingLogCard, MealCard, WorkoutCard, sumEntries } from "@/components/day-cards";
 import { Card, EnergyRing, MacroBar, PageHeader } from "@/components/ui";
-import { getFoodEntries, getToday, getWorkouts, requireProfile } from "@/lib/data";
+import { getFoodEntries, getToday, getWorkouts, requireProfile, setReturnPath } from "@/lib/data";
 import { addDays, formatDayLong, isIsoDate } from "@/lib/dates";
 import { fmt } from "@/lib/format";
 import { dayLoadLabel } from "@/lib/labels";
@@ -17,6 +17,7 @@ const FUELING_SLOT = "allenamento";
 
 export default async function TodayPage({ searchParams }: PageProps<"/oggi">) {
   const [today, { data }] = await Promise.all([getToday(), searchParams]);
+  setReturnPath(isIsoDate(data) ? `/oggi?data=${data}` : "/oggi");
   const date = isIsoDate(data) ? data : today;
   const tomorrow = addDays(date, 1);
 

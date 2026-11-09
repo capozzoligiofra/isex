@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { SessionRefresher } from "@/components/session-refresher";
 import { TimezoneSync } from "@/components/timezone-sync";
 import { APP_NAME, APP_TAGLINE } from "@/lib/app";
 import "./globals.css";
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         {children}
         <TimezoneSync />
+        <SessionRefresher />
       </body>
     </html>
   );

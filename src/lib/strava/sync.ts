@@ -1,7 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
-import { getTimeZone, getUserId } from "@/lib/data";
+import { getAuth, getDb, getTimeZone } from "@/lib/data";
 import { formatDateTime } from "@/lib/dates";
 import { deauthorize, listActivities, refreshTokens, StravaError, type StravaTokens } from "./client";
 import { isStravaConfigured } from "./config";
@@ -196,10 +195,8 @@ export async function syncStrava(
   return { imported: importedCount, linked: linkedCount, skipped: false };
 }
 
-export async function disconnectStrava(): Promise<void> {
-  const userId = await getUserId();
-  if (!userId) return;
-  const supabase = await createClient();
+export async function disconnectStrava(ctx: SyncContext): Promise<void> {
+  const { supabase, userId } = ctx;
   const conn = await getConnection(supabase, userId);
   if (!conn) return;
   try {
@@ -220,10 +217,9 @@ export interface StravaStatus {
 /** What the UI may know about the connection (never the tokens). */
 export async function getStravaStatus(): Promise<StravaStatus> {
   const configured = isStravaConfigured();
-  const userId = await getUserId();
-  if (!userId) return { configured, connected: false, athleteName: null, lastSyncedLabel: "mai" };
-  const supabase = await createClient();
-  const conn = await getConnection(supabase, userId);
+  const auth = await getAuth();
+  if (!auth) return { configured, connected: false, athleteName: null, lastSyncedLabel: "mai" };
+  const conn = await getConnection(await getDb(), auth.userId);
   return {
     configured,
     connected: Boolean(conn),

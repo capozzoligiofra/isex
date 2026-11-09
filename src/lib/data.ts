@@ -2,8 +2,9 @@ import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { createClient } from "@/lib/supabase/server";
+import { createDbClient, readAccessToken, verifyAccessToken } from "@/lib/supabase/session";
 import { DEFAULT_TIMEZONE, todayIso } from "@/lib/dates";
 import {
   FOOD_COLUMNS,
@@ -17,23 +18,63 @@ import {
   type WorkoutRow,
 } from "@/lib/db";
 
-/** The signed-in user's id, verified against the JWT, or null. */
-export const getUserId = cache(async (): Promise<string | null> => {
+/** Tokens this close to expiry count as expired: rendering never refreshes them. */
+const EXPIRY_MARGIN_MS = 60_000;
+
+/**
+ * The signed-in user for this render, verified from the auth cookie without
+ * any network call or session refresh (see lib/supabase/session.ts).
+ */
+export const getAuth = cache(async (): Promise<{ userId: string; token: string } | null> => {
   if (!isSupabaseConfigured()) return null;
-  const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  return data?.claims?.sub ?? null;
+  const token = await readAccessToken((await cookies()).getAll());
+  if (!token) return null;
+  const claims = await verifyAccessToken(token);
+  if (!claims || claims.exp * 1000 - Date.now() < EXPIRY_MARGIN_MS) return null;
+  return { userId: claims.sub, token };
 });
+
+export const getUserId = cache(async (): Promise<string | null> => (await getAuth())?.userId ?? null);
+
+// Per-request holder for where to come back to after logging in again.
+const returnPath = cache(() => ({ value: "/oggi" }));
+
+/** Call at the top of a page so an expired session comes back here after login. */
+export function setReturnPath(path: string) {
+  returnPath().value = path;
+}
+
+function redirectToLogin(): never {
+  redirect(`/login?next=${encodeURIComponent(returnPath().value)}`);
+}
 
 export async function requireUserId(): Promise<string> {
   const id = await getUserId();
-  if (!id) redirect("/login");
+  if (!id) redirectToLogin();
   return id;
 }
 
-export const getProfileRow = cache(async (): Promise<ProfileRow | null> => {
-  const userId = await requireUserId();
+/** Database client for rendering, bound to the user's access token. */
+export const getDb = cache(async () => {
+  const auth = await getAuth();
+  if (!auth) redirectToLogin();
+  return createDbClient(auth.token);
+});
+
+/**
+ * For Server Actions: verifies the user and refreshes the session if needed
+ * (actions can write cookies). Returns the SSR client to use for queries.
+ */
+export async function requireActionUser() {
   const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
+  if (!userId) redirect("/login");
+  return { userId, supabase };
+}
+
+export const getProfileRow = cache(async (): Promise<ProfileRow | null> => {
+  const [userId, supabase] = await Promise.all([requireUserId(), getDb()]);
   const { data, error } = await supabase
     .from("profiles")
     .select(PROFILE_COLUMNS)
@@ -52,8 +93,7 @@ export async function requireProfile() {
 }
 
 export async function getWorkouts(from: string, to: string) {
-  const userId = await requireUserId();
-  const supabase = await createClient();
+  const [userId, supabase] = await Promise.all([requireUserId(), getDb()]);
   const { data, error } = await supabase
     .from("workouts")
     .select(WORKOUT_COLUMNS)
@@ -67,8 +107,7 @@ export async function getWorkouts(from: string, to: string) {
 }
 
 export async function getWorkout(id: string) {
-  const userId = await requireUserId();
-  const supabase = await createClient();
+  const [userId, supabase] = await Promise.all([requireUserId(), getDb()]);
   const { data, error } = await supabase
     .from("workouts")
     .select(WORKOUT_COLUMNS)
@@ -80,8 +119,7 @@ export async function getWorkout(id: string) {
 }
 
 export async function getFoodEntries(date: string) {
-  const userId = await requireUserId();
-  const supabase = await createClient();
+  const [userId, supabase] = await Promise.all([requireUserId(), getDb()]);
   const { data, error } = await supabase
     .from("food_entries")
     .select(FOOD_COLUMNS)
@@ -94,8 +132,7 @@ export async function getFoodEntries(date: string) {
 
 /** Most recently logged distinct foods, for quick re-adding. */
 export async function getRecentFoods(limit = 12) {
-  const userId = await requireUserId();
-  const supabase = await createClient();
+  const [userId, supabase] = await Promise.all([requireUserId(), getDb()]);
   const { data, error } = await supabase
     .from("food_entries")
     .select(FOOD_COLUMNS)

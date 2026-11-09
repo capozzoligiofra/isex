@@ -1,7 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getToday, getUserId } from "@/lib/data";
-import { createClient } from "@/lib/supabase/server";
+import { getDb, getToday, getUserId } from "@/lib/data";
 
 /** Everything a sync needs, so it can also run outside the request (after()). */
 export interface SyncContext {
@@ -15,6 +14,6 @@ export interface SyncContext {
 export async function requestSyncContext(): Promise<SyncContext | null> {
   const userId = await getUserId();
   if (!userId) return null;
-  const [supabase, today] = await Promise.all([createClient(), getToday()]);
+  const [supabase, today] = await Promise.all([getDb(), getToday()]);
   return { supabase, userId, today };
 }

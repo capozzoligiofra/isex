@@ -7,7 +7,7 @@ import { ConfirmButton } from "@/components/confirm-button";
 import { SportIcon } from "@/components/sport-icon";
 import { Card, LinkButton, Stat, buttonClass, cx } from "@/components/ui";
 import { WorkoutForm } from "@/components/workout-form";
-import { getWorkout, getWorkouts, requireProfile } from "@/lib/data";
+import { getWorkout, getWorkouts, requireProfile, setReturnPath } from "@/lib/data";
 import { addDays, formatDayLong } from "@/lib/dates";
 import { fmt } from "@/lib/format";
 import { INTENSITIES, SOURCES, SPORTS, formatDuration } from "@/lib/labels";
@@ -19,6 +19,7 @@ export default async function WorkoutPage({ params, searchParams }: PageProps<"/
   const { id } = await params;
   const { modifica } = await searchParams;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
+  setReturnPath(`/allenamenti/${id}`);
 
   const [profile, workout] = await Promise.all([requireProfile(), getWorkout(id)]);
   if (!workout) notFound();

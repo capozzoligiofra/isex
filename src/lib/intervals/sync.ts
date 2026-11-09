@@ -1,7 +1,6 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/server";
-import { getTimeZone, getToday, getUserId } from "@/lib/data";
+import { getAuth, getDb, getTimeZone } from "@/lib/data";
 import { addDays, formatDateTime } from "@/lib/dates";
 import { matchPlanned, type PlannedCandidate } from "@/lib/integrations/common";
 import { requestSyncContext, type SyncContext } from "@/lib/integrations/context";
@@ -250,10 +249,9 @@ export interface IntervalsStatus {
 /** What the UI may know about the connection (never the API key). */
 export async function getIntervalsStatus(): Promise<IntervalsStatus> {
   const empty = { connected: false, athleteId: null, athleteName: null, defaultTime: "18:00", lastSyncedLabel: "mai" };
-  const userId = await getUserId();
-  if (!userId) return empty;
-  const supabase = await createClient();
-  const conn = await getConnection(supabase, userId);
+  const auth = await getAuth();
+  if (!auth) return empty;
+  const conn = await getConnection(await getDb(), auth.userId);
   if (!conn) return empty;
   return {
     connected: true,
@@ -265,11 +263,8 @@ export async function getIntervalsStatus(): Promise<IntervalsStatus> {
 }
 
 /** Removes the connection and the not-yet-done planned workouts it created. */
-export async function disconnectIntervals(): Promise<void> {
-  const userId = await getUserId();
-  if (!userId) return;
-  const supabase = await createClient();
-  const today = await getToday();
+export async function disconnectIntervals(ctx: SyncContext): Promise<void> {
+  const { supabase, userId, today } = ctx;
   await supabase
     .from("workouts")
     .delete()
