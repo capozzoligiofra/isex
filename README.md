@@ -117,9 +117,10 @@ Configurazione:
    uguale al dominio dell'app (es. `carbura-spkv.netlify.app`; `localhost` è sempre ammesso).
 2. Imposta `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET` (segreto, solo lato server) in
    `.env.local` e nelle variabili d'ambiente di Netlify, poi ripubblica.
-3. Le app Strava nuove accettano solo l'atleta che le ha create: per aprirle ad altri utenti
-   va richiesta l'approvazione a Strava. Prima di farlo, sostituisci il pulsante "Collega
-   Strava" con quello ufficiale delle linee guida del brand Strava.
+3. Le app Strava nuove accettano solo l'atleta che le ha create. Dalla pagina dell'app su
+   Strava si può salire a 10 atleti; oltre serve una revisione di Strava (che può richiedere
+   mesi e favorisce le app che usano i webhook). Prima di aprirla ad altri, sostituisci il
+   pulsante "Collega Strava" con quello ufficiale delle linee guida del brand Strava.
 
 Senza queste variabili l'app funziona normalmente e il profilo indica che l'integrazione non è
 configurata.
