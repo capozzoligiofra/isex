@@ -115,8 +115,13 @@ export async function getRecentFoods(limit = 12) {
   return out;
 }
 
-/** "Today" in the user's timezone (set by the browser in the `tz` cookie). */
-export async function getToday(): Promise<string> {
+/** The user's timezone, set by the browser in the `tz` cookie. */
+export async function getTimeZone(): Promise<string> {
   const tz = (await cookies()).get("tz")?.value;
-  return todayIso(tz ? decodeURIComponent(tz) : DEFAULT_TIMEZONE);
+  return tz ? decodeURIComponent(tz) : DEFAULT_TIMEZONE;
+}
+
+/** "Today" in the user's timezone. */
+export async function getToday(): Promise<string> {
+  return todayIso(await getTimeZone());
 }

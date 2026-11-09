@@ -16,17 +16,6 @@ const FLASH: Record<string, { text: string; ok: boolean }> = {
   "non-configurato": { text: "L'integrazione con Strava non è ancora configurata.", ok: false },
 };
 
-function formatSync(iso: string | null) {
-  if (!iso) return "mai";
-  return new Intl.DateTimeFormat("it-IT", {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Europe/Rome",
-  }).format(new Date(iso));
-}
-
 export function StravaCard({ status, flash }: { status: StravaStatus; flash?: string }) {
   const message = flash ? FLASH[flash] : undefined;
   return (
@@ -61,7 +50,7 @@ export function StravaCard({ status, flash }: { status: StravaStatus; flash?: st
         <div className="mt-3 space-y-3">
           <p className="text-sm">
             Collegato{status.athleteName ? ` come ${status.athleteName}` : ""} · ultima
-            sincronizzazione: {formatSync(status.lastSyncedAt)}
+            sincronizzazione: {status.lastSyncedLabel}
           </p>
           <div className="flex flex-wrap gap-2">
             <StravaSyncButton icon={<RefreshCw className="h-4 w-4" aria-hidden />} />

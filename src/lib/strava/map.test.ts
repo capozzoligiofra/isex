@@ -75,10 +75,10 @@ describe("toWorkout", () => {
 
 describe("matchPlanned", () => {
   const planned: PlannedCandidate[] = [
-    { id: "a", date: "2026-11-09", startTime: "08:00", sport: "cycling", completed: false, source: "manual" },
-    { id: "b", date: "2026-11-09", startTime: "10:00", sport: "cycling", completed: false, source: "manual" },
-    { id: "c", date: "2026-11-09", startTime: "09:30", sport: "running", completed: false, source: "manual" },
-    { id: "d", date: "2026-11-09", startTime: "09:30", sport: "cycling", completed: true, source: "manual" },
+    { id: "a", date: "2026-11-09", startTime: "08:00", sport: "cycling", completed: false, linked: false },
+    { id: "b", date: "2026-11-09", startTime: "10:00", sport: "cycling", completed: false, linked: false },
+    { id: "c", date: "2026-11-09", startTime: "09:30", sport: "running", completed: false, linked: false },
+    { id: "d", date: "2026-11-09", startTime: "09:30", sport: "cycling", completed: true, linked: false },
   ];
   const ride = { date: "2026-11-09", start_time: "09:30", sport: "cycling" as const };
 

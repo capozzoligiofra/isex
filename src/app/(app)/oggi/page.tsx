@@ -9,7 +9,7 @@ import { addDays, formatDayLong, isIsoDate } from "@/lib/dates";
 import { fmt } from "@/lib/format";
 import { dayLoadLabel } from "@/lib/labels";
 import { computeDayPlan, toMinutes } from "@/lib/nutrition";
-import { autoSyncStrava } from "@/lib/strava/sync";
+import { autoSyncIntegrations } from "@/lib/integrations/auto-sync";
 
 export const metadata: Metadata = { title: "Oggi" };
 
@@ -22,7 +22,7 @@ export default async function TodayPage({ searchParams }: PageProps<"/oggi">) {
   const date = isIsoDate(data) ? data : today;
   const tomorrow = addDays(date, 1);
 
-  await autoSyncStrava();
+  await autoSyncIntegrations();
   const [workouts, entries] = await Promise.all([
     getWorkouts(date, tomorrow),
     getFoodEntries(date),
@@ -142,7 +142,7 @@ export default async function TodayPage({ searchParams }: PageProps<"/oggi">) {
               <WorkoutCard
                 plan={item.workout}
                 completed={records.get(item.workout.workout.id)?.completed}
-                fromStrava={records.get(item.workout.workout.id)?.source === "strava"}
+                source={records.get(item.workout.workout.id)?.source}
               />
             )}
             {showFuelingLog && index === lastWorkoutIndex && (

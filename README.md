@@ -94,36 +94,38 @@ In locale la conferma email è disattivata (vedi `supabase/config.toml`).
   *Confirm email*.
 - Le migrazioni in `supabase/migrations/` sono già applicate al progetto.
 
-## Strava (e Garmin)
+## Garmin: intervals.icu e Strava
 
 Garmin ha sospeso l'accesso alle sue API per i nuovi sviluppatori, quindi gli allenamenti
-Garmin arrivano tramite Strava: Garmin Connect → Strava (sincronizzazione automatica) → Carbura.
+Garmin arrivano tramite un servizio intermedio. Le due integrazioni condividono la stessa logica:
+un'attività che corrisponde a un allenamento pianificato (stesso giorno e sport, inizio entro 3
+ore) lo **completa** invece di creare un doppione, e le attività già importate non vengono mai
+sovrascritte. La sincronizzazione parte aprendo *Oggi* o *Allenamenti* (con un intervallo minimo)
+o con *Sincronizza ora*.
 
-Cosa fa l'integrazione:
+### intervals.icu (consigliato)
 
-- l'atleta collega Strava dal **Profilo** (OAuth, permesso `activity:read_all`, sola lettura);
-- vengono importate le attività completate (prima volta: ultimi 14 giorni), con durata, sport,
-  kJ del misuratore di potenza e un'intensità stimata (gara/allenamento da Strava, oppure
-  Relative Effort per ora), correggibile in app;
-- se un'attività corrisponde a un allenamento pianificato (stesso giorno e sport, inizio entro
-  3 ore) lo **completa** invece di crearne un doppione, mantenendo titolo e intensità del piano;
-- la sincronizzazione parte aprendo *Oggi* o *Allenamenti* (al massimo ogni 30 minuti) o con
-  *Sincronizza ora*; le attività già importate non vengono sovrascritte;
-- *Scollega* revoca l'accesso su Strava e lascia gli allenamenti già importati.
+Gratuito, riceve le attività da Garmin in automatico e ha anche il calendario degli allenamenti
+pianificati. Nessuna configurazione lato server: ogni atleta inserisce nel **Profilo** il proprio
+ID atleta e la chiave API (intervals.icu → Settings → Developer Settings).
 
-Configurazione:
+- **Pianificati**: gli allenamenti e le gare dei prossimi 14 giorni vengono importati e restano
+  allineati al calendario (spostati, modificati o rimossi) finché non sono svolti. Quelli senza
+  orario usano l'"ora abituale" impostata nel profilo.
+- **Svolti**: le attività completano il loro piano (prima con l'abbinamento fatto da
+  intervals.icu, `paired_event_id`, poi per giorno/sport/orario) oppure vengono aggiunte. Intensità
+  dall'Intensity Factor (o dal carico), lavoro in kJ da `icu_joules`.
+- Le attività arrivate su intervals.icu da Strava non sono esposte dalla sua API e vengono saltate.
+- *Scollega* elimina la chiave e gli allenamenti pianificati futuri importati; quelli svolti restano.
+- La chiave API resta nel database protetta da RLS e non viene mai inviata al browser.
 
-1. Crea un'app su <https://www.strava.com/settings/api>, con *Authorization Callback Domain*
-   uguale al dominio dell'app (es. `carbura-spkv.netlify.app`; `localhost` è sempre ammesso).
-2. Imposta `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET` (segreto, solo lato server) in
-   `.env.local` e nelle variabili d'ambiente di Netlify, poi ripubblica.
-3. Le app Strava nuove accettano solo l'atleta che le ha create. Dalla pagina dell'app su
-   Strava si può salire a 10 atleti; oltre serve una revisione di Strava (che può richiedere
-   mesi e favorisce le app che usano i webhook). Prima di aprirla ad altri, sostituisci il
-   pulsante "Collega Strava" con quello ufficiale delle linee guida del brand Strava.
+### Strava (facoltativo)
 
-Senza queste variabili l'app funziona normalmente e il profilo indica che l'integrazione non è
-configurata.
+Disattivato finché non imposti `STRAVA_CLIENT_ID` e `STRAVA_CLIENT_SECRET` (app creata su
+<https://www.strava.com/settings/api>, *Authorization Callback Domain* = dominio dell'app). Importa
+solo attività svolte (OAuth, `activity:read_all`). Le app Strava nuove accettano solo l'atleta che le
+ha create (fino a 10 dalla pagina dell'app; oltre serve una revisione di Strava). Prima di aprirla ad
+altri, usa il pulsante ufficiale "Connect with Strava".
 
 ## Script
 

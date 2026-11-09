@@ -10,7 +10,7 @@ import { WorkoutForm } from "@/components/workout-form";
 import { getWorkout, getWorkouts, requireProfile } from "@/lib/data";
 import { addDays, formatDayLong } from "@/lib/dates";
 import { fmt } from "@/lib/format";
-import { INTENSITIES, SPORTS, formatDuration } from "@/lib/labels";
+import { INTENSITIES, SOURCES, SPORTS, formatDuration } from "@/lib/labels";
 import { computeDayPlan, formatTime, toMinutes } from "@/lib/nutrition";
 
 export const metadata: Metadata = { title: "Allenamento" };
@@ -56,19 +56,25 @@ export default async function WorkoutPage({ params, searchParams }: PageProps<"/
             {INTENSITIES[workout.intensity].label}
             {workout.completed && " · completato"}
           </p>
-          {workout.source === "strava" && workout.externalId && (
+          {workout.source !== "manual" && workout.externalId && (
             <a
-              href={`https://www.strava.com/activities/${workout.externalId}`}
+              href={SOURCES[workout.source].activityUrl(workout.externalId)}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-1 inline-block text-sm font-semibold text-[#fc4c02] hover:underline"
+              className={cx(
+                "mt-1 inline-block text-sm font-semibold hover:underline",
+                workout.source === "strava" ? "text-[#fc4c02]" : "text-primary",
+              )}
             >
-              View on Strava
+              {SOURCES[workout.source].linkText}
             </a>
           )}
-          {workout.source === "strava" && (
+          {workout.source !== "manual" && (
             <p className="mt-1 text-xs text-muted">
-              Importato da Strava: se l&apos;intensità non è quella giusta, correggila con Modifica.
+              {workout.completed ? "Importato" : "Pianificato"} da {SOURCES[workout.source].label}
+              {workout.completed
+                ? ": se l'intensità non è quella giusta, correggila con Modifica."
+                : ": si aggiorna quando cambi il calendario lì."}
             </p>
           )}
         </div>

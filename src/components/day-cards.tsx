@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { ChevronRight, Droplets, Plus, Trash2 } from "lucide-react";
 import { deleteFoodEntry } from "@/app/actions/food";
-import type { FoodEntry } from "@/lib/db";
+import type { FoodEntry, WorkoutSource } from "@/lib/db";
 import { fmt } from "@/lib/format";
-import { INTENSITIES, SPORTS, formatDuration } from "@/lib/labels";
+import { INTENSITIES, SOURCES, SPORTS, formatDuration } from "@/lib/labels";
 import type { MealPlan, WorkoutPlan } from "@/lib/nutrition";
 import { SportIcon } from "./sport-icon";
 import { CarbBadge, Card, cx } from "./ui";
@@ -105,11 +105,11 @@ export function MealCard({ meal, entries, date }: { meal: MealPlan; entries: Foo
 export function WorkoutCard({
   plan,
   completed,
-  fromStrava,
+  source,
 }: {
   plan: WorkoutPlan;
   completed?: boolean;
-  fromStrava?: boolean;
+  source?: WorkoutSource;
 }) {
   const { workout: w, fueling: f } = plan;
   return (
@@ -125,7 +125,7 @@ export function WorkoutCard({
             <p className="text-xs text-muted">
               {formatDuration(w.durationMin)} · {INTENSITIES[w.intensity].label} · ~{fmt(plan.kcal)} kcal
               {completed ? " · completato" : ""}
-              {fromStrava ? " · da Strava" : ""}
+              {source && source !== "manual" ? ` · ${SOURCES[source].label}` : ""}
             </p>
           </div>
           <ChevronRight className="h-5 w-5 text-muted" aria-hidden />

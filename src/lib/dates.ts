@@ -64,3 +64,14 @@ export function formatRange(fromIso: string, toIso: string): string {
   });
   return `${fmt.format(toUtc(fromIso))} – ${fmt.format(toUtc(toIso))}`;
 }
+
+/** "9 nov, 17:35" in the given timezone, or "mai" when there is no date. */
+export function formatDateTime(iso: string | null, timeZone: string = DEFAULT_TIMEZONE): string {
+  if (!iso) return "mai";
+  const opts = { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" } as const;
+  try {
+    return new Intl.DateTimeFormat("it-IT", { ...opts, timeZone }).format(new Date(iso));
+  } catch {
+    return new Intl.DateTimeFormat("it-IT", { ...opts, timeZone: DEFAULT_TIMEZONE }).format(new Date(iso));
+  }
+}

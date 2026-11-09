@@ -1,4 +1,7 @@
 import type { Intensity, Sport } from "@/lib/nutrition";
+import { mapSport } from "@/lib/integrations/common";
+
+export { MATCH_WINDOW_MIN, mapSport, matchPlanned, type PlannedCandidate } from "@/lib/integrations/common";
 
 /** The fields we use from Strava's SummaryActivity. */
 export interface StravaActivity {
@@ -14,29 +17,6 @@ export interface StravaActivity {
   workout_type?: number | null;
   suffer_score?: number | null;
   manual?: boolean;
-}
-
-const CYCLING = new Set([
-  "Ride",
-  "VirtualRide",
-  "GravelRide",
-  "MountainBikeRide",
-  "EBikeRide",
-  "EMountainBikeRide",
-  "Velomobile",
-  "Handcycle",
-]);
-const RUNNING = new Set(["Run", "TrailRun", "VirtualRun"]);
-const SWIMMING = new Set(["Swim"]);
-const STRENGTH = new Set(["WeightTraining", "Crossfit", "HighIntensityIntervalTraining"]);
-
-export function mapSport(activity: Pick<StravaActivity, "sport_type" | "type">): Sport {
-  const t = activity.sport_type || activity.type || "";
-  if (CYCLING.has(t)) return "cycling";
-  if (RUNNING.has(t)) return "running";
-  if (SWIMMING.has(t)) return "swimming";
-  if (STRENGTH.has(t)) return "strength";
-  return "other";
 }
 
 /** Strava workout_type codes: runs 1 = race, 3 = workout; rides 11 = race, 12 = workout. */
@@ -98,41 +78,4 @@ export function toWorkout(activity: StravaActivity): ImportedWorkout | null {
     source: "strava",
     external_id: String(activity.id),
   };
-}
-
-export interface PlannedCandidate {
-  id: string;
-  date: string;
-  startTime: string; // HH:MM
-  sport: Sport;
-  completed: boolean;
-  source: "manual" | "strava";
-}
-
-/** How far apart (minutes) a plan and the activity can start and still match. */
-export const MATCH_WINDOW_MIN = 180;
-
-function minutes(hhmm: string) {
-  const [h, m] = hhmm.split(":").map(Number);
-  return h * 60 + (m || 0);
-}
-
-/**
- * Finds the planned (manual, not yet completed) workout this activity most
- * likely corresponds to: same day, same sport, start within 3 hours.
- */
-export function matchPlanned(
-  imported: Pick<ImportedWorkout, "date" | "start_time" | "sport">,
-  candidates: PlannedCandidate[],
-  taken: Set<string> = new Set(),
-): string | null {
-  let best: { id: string; gap: number } | null = null;
-  for (const c of candidates) {
-    if (taken.has(c.id) || c.source !== "manual" || c.completed) continue;
-    if (c.date !== imported.date || c.sport !== imported.sport) continue;
-    const gap = Math.abs(minutes(c.startTime) - minutes(imported.start_time));
-    if (gap > MATCH_WINDOW_MIN) continue;
-    if (!best || gap < best.gap) best = { id: c.id, gap };
-  }
-  return best?.id ?? null;
 }

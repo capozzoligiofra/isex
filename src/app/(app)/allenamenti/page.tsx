@@ -7,9 +7,9 @@ import { CarbBadge, Card, LinkButton, PageHeader, cx } from "@/components/ui";
 import { getToday, getWorkouts, requireProfile } from "@/lib/data";
 import { addDays, formatDayShort, formatRange, isIsoDate, startOfWeek } from "@/lib/dates";
 import { fmt } from "@/lib/format";
-import { INTENSITIES, SPORTS, dayLoadLabel, formatDuration } from "@/lib/labels";
+import { INTENSITIES, SOURCES, SPORTS, dayLoadLabel, formatDuration } from "@/lib/labels";
 import { computeDayPlan } from "@/lib/nutrition";
-import { autoSyncStrava } from "@/lib/strava/sync";
+import { autoSyncIntegrations } from "@/lib/integrations/auto-sync";
 
 export const metadata: Metadata = { title: "Allenamenti" };
 
@@ -19,7 +19,7 @@ export default async function WorkoutsPage({ searchParams }: PageProps<"/allenam
   const { settimana } = await searchParams;
   const monday = startOfWeek(isIsoDate(settimana) ? settimana : today);
   const days = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
-  await autoSyncStrava();
+  await autoSyncIntegrations();
   // One extra day so Sunday knows about Monday's sessions.
   const workouts = await getWorkouts(monday, addDays(monday, 7));
 
@@ -98,7 +98,7 @@ export default async function WorkoutsPage({ searchParams }: PageProps<"/allenam
                           <div className="truncate text-sm font-semibold">{w.title || SPORTS[w.sport]}</div>
                           <div className="text-xs text-muted">
                             {w.startTime} · {formatDuration(w.durationMin)} · {INTENSITIES[w.intensity].label}
-                            {w.source === "strava" && " · Strava"}
+                            {w.source !== "manual" && ` · ${SOURCES[w.source].label}`}
                           </div>
                         </div>
                         {w.completed && <span className="text-xs font-medium text-primary">✓</span>}

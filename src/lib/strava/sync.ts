@@ -1,7 +1,8 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
-import { getUserId } from "@/lib/data";
+import { getTimeZone, getUserId } from "@/lib/data";
+import { formatDateTime } from "@/lib/dates";
 import { deauthorize, listActivities, refreshTokens, StravaError, type StravaTokens } from "./client";
 import { isStravaConfigured } from "./config";
 import { matchPlanned, toWorkout, type PlannedCandidate } from "./map";
@@ -138,7 +139,7 @@ export async function syncStrava(opts: { force?: boolean } = {}): Promise<SyncRe
       start_time: string;
       sport: PlannedCandidate["sport"];
       completed: boolean;
-      source: PlannedCandidate["source"];
+      source: string;
       external_id: string | null;
     }>;
     const known = new Set(rows.filter((r) => r.external_id).map((r) => r.external_id));
@@ -148,7 +149,7 @@ export async function syncStrava(opts: { force?: boolean } = {}): Promise<SyncRe
       startTime: r.start_time.slice(0, 5),
       sport: r.sport,
       completed: r.completed,
-      source: r.source,
+      linked: Boolean(r.external_id),
     }));
     const taken = new Set<string>();
 
@@ -192,18 +193,6 @@ export async function syncStrava(opts: { force?: boolean } = {}): Promise<SyncRe
   return { imported: importedCount, linked: linkedCount, skipped: false };
 }
 
-/** Background-style sync for page loads: throttled, time-boxed, never throws. */
-export async function autoSyncStrava(timeoutMs = 5000): Promise<void> {
-  try {
-    await Promise.race([
-      syncStrava(),
-      new Promise((resolve) => setTimeout(resolve, timeoutMs)),
-    ]);
-  } catch (e) {
-    console.error("Sincronizzazione Strava non riuscita:", e);
-  }
-}
-
 export async function disconnectStrava(): Promise<void> {
   const userId = await getUserId();
   if (!userId) return;
@@ -222,20 +211,20 @@ export interface StravaStatus {
   configured: boolean;
   connected: boolean;
   athleteName: string | null;
-  lastSyncedAt: string | null;
+  lastSyncedLabel: string;
 }
 
 /** What the UI may know about the connection (never the tokens). */
 export async function getStravaStatus(): Promise<StravaStatus> {
   const configured = isStravaConfigured();
   const userId = await getUserId();
-  if (!userId) return { configured, connected: false, athleteName: null, lastSyncedAt: null };
+  if (!userId) return { configured, connected: false, athleteName: null, lastSyncedLabel: "mai" };
   const supabase = await createClient();
   const conn = await getConnection(supabase, userId);
   return {
     configured,
     connected: Boolean(conn),
     athleteName: conn?.athlete_name ?? null,
-    lastSyncedAt: conn?.last_synced_at ?? null,
+    lastSyncedLabel: formatDateTime(conn?.last_synced_at ?? null, await getTimeZone()),
   };
 }

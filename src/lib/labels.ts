@@ -42,6 +42,19 @@ export const CARB_CODES: Record<CarbCode, { label: string; short: string }> = {
   high: { label: "Carbo alto", short: "Alto" },
 };
 
+export const SOURCES: Record<"strava" | "intervals", { label: string; activityUrl: (id: string) => string; linkText: string }> = {
+  strava: {
+    label: "Strava",
+    activityUrl: (id) => `https://www.strava.com/activities/${id}`,
+    linkText: "View on Strava",
+  },
+  intervals: {
+    label: "intervals.icu",
+    activityUrl: (id) => `https://intervals.icu/activities/${id}`,
+    linkText: "Vedi su intervals.icu",
+  },
+};
+
 export function dayLoadLabel(load: number): string {
   if (load === 0) return "Riposo";
   if (load < 0.75) return "Giornata leggera";

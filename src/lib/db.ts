@@ -9,6 +9,8 @@ import type {
   Workout,
 } from "@/lib/nutrition";
 
+export type WorkoutSource = "manual" | "strava" | "intervals";
+
 export interface ProfileRow {
   id: string;
   display_name: string | null;
@@ -35,8 +37,9 @@ export interface WorkoutRow {
   hot_conditions: boolean;
   completed: boolean;
   notes: string | null;
-  source: "manual" | "strava";
+  source: WorkoutSource;
   external_id: string | null;
+  plan_external_id: string | null;
 }
 
 export interface FoodEntryRow {
@@ -71,7 +74,7 @@ export interface FoodEntry {
 }
 
 export const WORKOUT_COLUMNS =
-  "id, user_id, date, start_time, duration_min, sport, intensity, title, energy_kj, hot_conditions, completed, notes, source, external_id";
+  "id, user_id, date, start_time, duration_min, sport, intensity, title, energy_kj, hot_conditions, completed, notes, source, external_id, plan_external_id";
 export const FOOD_COLUMNS =
   "id, date, meal_slot, name, brand, source, source_id, grams, kcal, carbs_g, protein_g, fat_g, created_at";
 export const PROFILE_COLUMNS =
@@ -105,7 +108,7 @@ export function toProfile(row: ProfileRow): CompleteProfile | null {
 export interface WorkoutRecord extends Workout {
   completed: boolean;
   notes: string | null;
-  source: "manual" | "strava";
+  source: WorkoutSource;
   externalId: string | null;
 }
 
