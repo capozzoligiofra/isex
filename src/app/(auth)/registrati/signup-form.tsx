@@ -39,7 +39,7 @@ export function SignupForm() {
       </SubmitButton>
       <p className="text-center text-sm text-muted">
         Hai già un account?{" "}
-        <Link href="/login" className="font-semibold text-primary">
+        <Link prefetch={false} href="/login" className="font-semibold text-primary">
           Accedi
         </Link>
       </p>

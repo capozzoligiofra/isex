@@ -29,10 +29,10 @@ export function LoginForm({ next }: { next?: string }) {
         Accedi
       </SubmitButton>
       <div className="flex justify-between text-sm">
-        <Link href="/password-dimenticata" className="text-muted hover:text-text">
+        <Link prefetch={false} href="/password-dimenticata" className="text-muted hover:text-text">
           Password dimenticata?
         </Link>
-        <Link href="/registrati" className="font-semibold text-primary">
+        <Link prefetch={false} href="/registrati" className="font-semibold text-primary">
           Registrati
         </Link>
       </div>

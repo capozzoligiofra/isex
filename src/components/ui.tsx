@@ -155,12 +155,14 @@ export function EnergyRing({ value, target }: { value: number; target: number })
   );
 }
 
+/** Button-styled link. Doesn't prefetch: every target page is rendered on demand. */
 export function LinkButton({
   variant = "primary",
   className,
+  prefetch = false,
   ...props
 }: ComponentProps<typeof Link> & { variant?: keyof typeof buttonClass }) {
-  return <Link className={cx(buttonClass[variant], className)} {...props} />;
+  return <Link prefetch={prefetch} className={cx(buttonClass[variant], className)} {...props} />;
 }
 
 export function Stat({ label, value, hint }: { label: string; value: ReactNode; hint?: ReactNode }) {

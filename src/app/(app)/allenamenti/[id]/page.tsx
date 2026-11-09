@@ -39,7 +39,7 @@ export default async function WorkoutPage({ params, searchParams }: PageProps<"/
 
   return (
     <>
-      <Link href={`/oggi?data=${workout.date}`} className={cx(buttonClass.ghost, "-ml-3 mb-2")}>
+      <Link prefetch={false} href={`/oggi?data=${workout.date}`} className={cx(buttonClass.ghost, "-ml-3 mb-2")}>
         <ArrowLeft className="h-4 w-4" aria-hidden />
         <span>{formatDayLong(workout.date)}</span>
       </Link>

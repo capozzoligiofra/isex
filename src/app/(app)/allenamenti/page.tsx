@@ -61,7 +61,7 @@ export default async function WorkoutsPage({ searchParams }: PageProps<"/allenam
           return (
             <Card key={day} className={cx(day === today && "border-primary/60")}>
               <div className="flex items-start justify-between gap-3">
-                <Link href={`/oggi?data=${day}`} className="min-w-0">
+                <Link prefetch={false} href={`/oggi?data=${day}`} className="min-w-0">
                   <div className="font-semibold">
                     {formatDayShort(day)}
                     {day === today && <span className="ml-2 text-xs font-medium text-primary">oggi</span>}
@@ -70,7 +70,7 @@ export default async function WorkoutsPage({ searchParams }: PageProps<"/allenam
                     {dayLoadLabel(plan.load)} · {fmt(plan.targets.carbsPerKg, 1)} g/kg carbo · {fmt(plan.targets.kcal)} kcal
                   </div>
                 </Link>
-                <Link
+                <Link prefetch={false}
                   href={`/allenamenti/nuovo?data=${day}`}
                   className="rounded-lg p-1.5 text-muted transition hover:bg-surface-2 hover:text-primary"
                   aria-label={`Aggiungi allenamento ${formatDayShort(day)}`}
@@ -92,7 +92,7 @@ export default async function WorkoutsPage({ searchParams }: PageProps<"/allenam
                 <ul className="mt-3 space-y-2">
                   {dayWorkouts.map((w) => (
                     <li key={w.id}>
-                      <Link
+                      <Link prefetch={false}
                         href={`/allenamenti/${w.id}`}
                         className="flex items-center gap-3 rounded-xl bg-surface-2 px-3 py-2 transition hover:bg-primary/10"
                       >

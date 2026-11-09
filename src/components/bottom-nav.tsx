@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CalendarDays, Sun, UserRound } from "lucide-react";
+import { LinkPending } from "./link-pending";
 import { cx } from "./ui";
 
 const ITEMS = [
@@ -28,13 +29,16 @@ export function BottomNav() {
             <li key={href} className="flex-1">
               <Link
                 href={href}
+                prefetch={false}
                 aria-current={active ? "page" : undefined}
                 className={cx(
                   "flex flex-col items-center gap-0.5 py-2.5 text-xs font-medium transition",
                   active ? "text-primary" : "text-muted hover:text-text",
                 )}
               >
-                <Icon className="h-5 w-5" aria-hidden />
+                <LinkPending>
+                  <Icon className="h-5 w-5" aria-hidden />
+                </LinkPending>
                 {label}
               </Link>
             </li>

@@ -47,7 +47,7 @@ export default async function AddFoodPage({ searchParams }: PageProps<"/diario/a
 
   return (
     <>
-      <Link href={`/oggi?data=${date}#pasto-${slot}`} className={cx(buttonClass.ghost, "-ml-3 mb-2")}>
+      <Link prefetch={false} href={`/oggi?data=${date}#pasto-${slot}`} className={cx(buttonClass.ghost, "-ml-3 mb-2")}>
         <ArrowLeft className="h-4 w-4" aria-hidden />
         Torna alla giornata
       </Link>

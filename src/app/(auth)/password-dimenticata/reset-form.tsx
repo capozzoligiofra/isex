@@ -19,7 +19,7 @@ export function ResetForm() {
         Inviami il link
       </SubmitButton>
       <p className="text-center text-sm">
-        <Link href="/login" className="text-muted hover:text-text">
+        <Link prefetch={false} href="/login" className="text-muted hover:text-text">
           Torna all&apos;accesso
         </Link>
       </p>

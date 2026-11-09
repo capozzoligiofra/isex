@@ -63,7 +63,7 @@ function EntryList({ entries }: { entries: FoodEntry[] }) {
 
 function AddFoodLink({ date, slot, label = "Aggiungi alimento" }: { date: string; slot: string; label?: string }) {
   return (
-    <Link
+    <Link prefetch={false}
       href={`/diario/aggiungi?data=${date}&pasto=${slot}`}
       className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-primary"
     >
@@ -113,7 +113,7 @@ export function WorkoutCard({
 }) {
   const { workout: w, fueling: f } = plan;
   return (
-    <Link href={`/allenamenti/${w.id}`} className="block">
+    <Link prefetch={false} href={`/allenamenti/${w.id}`} className="block">
       <Card className="border-primary/30 bg-primary/5 transition hover:border-primary/60">
         <div className="flex items-start gap-3">
           <span className="tabular pt-0.5 text-sm text-muted">{w.startTime}</span>

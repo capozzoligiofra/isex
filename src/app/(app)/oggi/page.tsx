@@ -120,7 +120,7 @@ export default async function TodayPage({ searchParams }: PageProps<"/oggi">) {
 
       <div className="mb-3 flex items-center justify-between">
         <h2 className="font-semibold">La giornata</h2>
-        <Link
+        <Link prefetch={false}
           href={`/allenamenti/nuovo?data=${date}`}
           className="inline-flex items-center gap-1 text-sm font-semibold text-primary"
         >
