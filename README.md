@@ -30,7 +30,7 @@ carboidrati (basso / medio / alto) e prepara il piano di rifornimento per ogni s
 
 ## Stack
 
-- [Next.js 16](https://nextjs.org) (App Router, Server Actions, `proxy.ts`), React 19, TypeScript
+- [Next.js 16](https://nextjs.org) (App Router, Server Actions, `after()`), React 19, TypeScript
 - [Tailwind CSS 4](https://tailwindcss.com)
 - [Supabase](https://supabase.com): Postgres, Auth, Row Level Security (`@supabase/ssr`)
 - [Zod](https://zod.dev) per la validazione, [Vitest](https://vitest.dev) per i test
@@ -93,11 +93,17 @@ In locale la conferma email è disattivata (vedi `supabase/config.toml`).
   tutti) configura un SMTP in Authentication → Emails → SMTP Settings, poi riattiva
   *Confirm email*.
 - Le migrazioni in `supabase/migrations/` sono già applicate al progetto.
+- **Sessione senza proxy**: niente middleware (su Netlify girerebbe come edge function con avvii a
+  freddo di 1–3 s). Le pagine verificano il token del cookie in locale e interrogano il database
+  con quel token, senza mai rinnovarlo; le Server Action possono rinnovarlo; il browser
+  (`components/session-refresher.tsx`) mantiene la sessione aggiornata e, dopo una scadenza, la
+  rinnova dalla pagina di login riportando l'utente dove voleva andare.
 - **Prestazioni**: le funzioni Netlify girano in us-east-2 (Ohio), il database a Francoforte. Le
   pagine fanno una sola andata e ritorno verso il database (query in parallelo) e le
   sincronizzazioni con intervals.icu/Strava girano dopo l'invio della pagina (`after()`). La
-  funzione programmata `netlify/functions/keep-warm.mts` chiama `/api/health` ogni 5 minuti per
-  evitare gli avvii a freddo. Per avere server e database vicini serve spostare le funzioni a
+  funzione programmata `netlify/functions/keep-warm.mts` chiama `/api/health` ogni 5 minuti (due
+  richieste in parallelo) per evitare gli avvii a freddo, e i link alle pagine dinamiche non fanno
+  prefetch (ogni prefetch avvierebbe un'altra istanza a freddo). Per avere server e database vicini serve spostare le funzioni a
   Francoforte (Netlify → Cloud compute → Functions → Region, piano Pro) e poi ripubblicare.
 
 ## Garmin: intervals.icu e Strava
@@ -182,9 +188,8 @@ src/
   lib/
     nutrition/         motore di calcolo (puro, testato)
     foods/             alimenti di base e client Open Food Facts
-    supabase/          client Supabase per server e proxy
+    supabase/          client Supabase (azioni, rendering con token, verifica sessione)
     data.ts            accesso ai dati (lato server)
-  proxy.ts             refresh della sessione e redirect
 supabase/
   migrations/          schema SQL con Row Level Security
 ```
