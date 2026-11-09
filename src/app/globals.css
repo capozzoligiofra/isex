@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f5f6f2;
+  --surface: #ffffff;
+  --surface-2: #eceee8;
+  --text: #141816;
+  --muted: #5b6460;
+  --border: #dde1d9;
+  --primary: #13784a;
+  --primary-hover: #0f633c;
+  --on-primary: #ffffff;
+  --accent: #c6ef4e;
+  --danger: #c0392b;
+
+  --carb-low: #2f74d0;
+  --carb-low-bg: #e4eefb;
+  --carb-medium: #b7790a;
+  --carb-medium-bg: #fbf0d9;
+  --carb-high: #d1452f;
+  --carb-high-bg: #fbe5e1;
+
+  --macro-carbs: #e0892b;
+  --macro-protein: #3b7dd8;
+  --macro-fat: #8a63c9;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0e1211;
+    --surface: #161b19;
+    --surface-2: #1e2422;
+    --text: #edf1ee;
+    --muted: #98a29e;
+    --border: #29302d;
+    --primary: #39c983;
+    --primary-hover: #52d896;
+    --on-primary: #06140d;
+    --accent: #c6ef4e;
+    --danger: #ef6b5b;
+
+    --carb-low: #6aa5f2;
+    --carb-low-bg: #172538;
+    --carb-medium: #f0b543;
+    --carb-medium-bg: #2f2615;
+    --carb-high: #f27a64;
+    --carb-high-bg: #36201b;
+
+    --macro-carbs: #f0a050;
+    --macro-protein: #6aa5f2;
+    --macro-fat: #b393e8;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-on-primary: var(--on-primary);
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
+  --color-carb-low: var(--carb-low);
+  --color-carb-low-bg: var(--carb-low-bg);
+  --color-carb-medium: var(--carb-medium);
+  --color-carb-medium-bg: var(--carb-medium-bg);
+  --color-carb-high: var(--carb-high);
+  --color-carb-high-bg: var(--carb-high-bg);
+  --color-macro-carbs: var(--macro-carbs);
+  --color-macro-protein: var(--macro-protein);
+  --color-macro-fat: var(--macro-fat);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+html {
+  color-scheme: light dark;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+input,
+select,
+textarea {
+  font-size: 16px; /* evita lo zoom automatico su iOS */
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
