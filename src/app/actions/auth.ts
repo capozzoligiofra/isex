@@ -25,6 +25,10 @@ function authMessage(error: { code?: string; message: string }): string {
       return "Conferma prima il tuo indirizzo email: controlla la casella di posta.";
     case "user_already_exists":
       return "Esiste già un account con questa email.";
+    case "email_address_invalid":
+      return "Indirizzo email non valido: usane uno reale.";
+    case "email_address_not_authorized":
+      return "Al momento non possiamo inviare email a questo indirizzo. Riprova più tardi.";
     case "weak_password":
       return "Password troppo debole: usa almeno 8 caratteri con lettere e numeri.";
     case "over_email_send_rate_limit":
